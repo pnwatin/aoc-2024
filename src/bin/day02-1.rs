@@ -30,6 +30,11 @@ fn is_safe(line: &[i32]) -> bool {
 
     let is_ascending = diff.iter().all(|n| n > &0);
     let is_descending = diff.iter().all(|n| n < &0);
+    let is_ordering_valid = is_descending || is_ascending;
+
+    if !is_ordering_valid {
+        return false;
+    }
 
     diff.iter().fold(is_ascending || is_descending, |safe, n| {
         safe && n.abs() <= 3
