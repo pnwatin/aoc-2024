@@ -1,42 +1,28 @@
-use std::{fmt::Display, time::Instant};
+pub fn read_input(day_number: usize) -> std::io::Result<Vec<String>> {
+    use std::io::BufRead;
 
-mod day01;
+    let input_path = format!("./inputs/day{:02}.txt", day_number);
+    let file = std::fs::File::open(input_path)?;
+    let bufreader = std::io::BufReader::new(file);
 
-pub use day01::Day01;
+    bufreader.lines().collect()
+}
 
-pub type Error = Box<dyn std::error::Error + Send + Sync>;
-pub type Result<T> = std::result::Result<T, Error>;
+pub fn pretty_result<F, S>(f: F)
+where
+    S: std::fmt::Display,
+    F: Fn() -> std::io::Result<S>,
+{
+    let start = std::time::Instant::now();
 
-pub trait AdventDay {
-    fn day_number(&self) -> u32;
+    match f() {
+        Ok(result) => {
+            println!("  solution : {}", result);
+        }
+        Err(e) => {
+            println!("  error : {}", e);
+        }
+    };
 
-    fn part_one(&self) -> Result<Box<dyn Display>>;
-
-    fn part_two(&self) -> Result<Box<dyn Display>>;
-
-    fn pretty(&self) {
-        println!("\nDay {}", self.day_number());
-
-        let part_one_start = Instant::now();
-        let part_one_result = match self.part_one() {
-            Ok(res) => res.to_string(),
-            Err(e) => format!("Error: {}", e),
-        };
-        println!(
-            "- ⭐    result : {} (took {:?})",
-            part_one_result,
-            part_one_start.elapsed(),
-        );
-
-        let part_two_start = Instant::now();
-        let part_two_result = match self.part_two() {
-            Ok(res) => res.to_string(),
-            Err(e) => format!("Error: {}", e),
-        };
-        println!(
-            "- ⭐⭐  result : {} (took {:?})",
-            part_two_result,
-            part_two_start.elapsed(),
-        );
-    }
+    println!("  took : {:?}", start.elapsed());
 }
