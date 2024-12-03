@@ -1,11 +1,19 @@
-pub fn read_input(day_number: usize) -> std::io::Result<Vec<String>> {
-    use std::io::BufRead;
+use std::{
+    fs::{self, File},
+    io::BufReader,
+};
 
+pub fn read_input(day_number: usize) -> std::io::Result<BufReader<File>> {
     let input_path = format!("./inputs/day{:02}.txt", day_number);
-    let file = std::fs::File::open(input_path)?;
-    let bufreader = std::io::BufReader::new(file);
+    let file = File::open(input_path)?;
 
-    bufreader.lines().collect()
+    Ok(BufReader::new(file))
+}
+
+pub fn read_input_to_string(day_number: usize) -> std::io::Result<String> {
+    let input_path = format!("./inputs/day{:02}.txt", day_number);
+
+    fs::read_to_string(input_path)
 }
 
 pub fn pretty_result<F, S>(f: F)
