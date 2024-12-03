@@ -1,8 +1,12 @@
+use std::io::BufRead;
+
 use aoc::{pretty_result, read_input};
 
 fn main() {
     pretty_result(|| {
-        let input_lines = read_input(1)?;
+        let input_lines = read_input(1)?
+            .lines()
+            .collect::<std::io::Result<Vec<String>>>()?;
 
         let (mut left, mut right): (Vec<_>, Vec<_>) = input_lines
             .into_iter()
