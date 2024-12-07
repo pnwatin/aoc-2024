@@ -2,17 +2,17 @@ use std::collections::HashSet;
 
 use aoc::{pretty_result, read_input_to_string};
 
+const DIRECTIONS: [(isize, isize); 4] = [(-1, 0), (0, 1), (1, 0), (0, -1)];
+
 fn main() {
     pretty_result(|| {
         let input_str = read_input_to_string(6)?;
+
         let matrix: Vec<Vec<char>> = input_str.lines().map(|l| l.chars().collect()).collect();
-
-        let guard = get_guard(&matrix).unwrap();
-        let dirs: [(isize, isize); 4] = [(-1, 0), (0, 1), (1, 0), (0, -1)];
-
         let height = matrix.len();
         let width = matrix[0].len();
 
+        let guard = get_guard(&matrix).unwrap();
         let mut count = 0;
         let mut visited = HashSet::new();
 
@@ -28,7 +28,7 @@ fn main() {
                 let mut dir_idx = 0;
 
                 loop {
-                    let (dy, dx) = dirs[dir_idx];
+                    let (dy, dx) = DIRECTIONS[dir_idx];
                     let ny = y.wrapping_add(dy as usize);
                     let nx = x.wrapping_add(dx as usize);
 

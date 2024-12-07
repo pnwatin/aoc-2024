@@ -1,61 +1,55 @@
+use std::collections::HashSet;
+
 use aoc::{pretty_result, read_input_to_string};
+
+const DIRECTIONS: [(isize, isize); 4] = [(-1, 0), (0, 1), (1, 0), (0, -1)];
 
 fn main() {
     pretty_result(|| {
         let input_str = read_input_to_string(6)?;
-        let mut matrix: Vec<Vec<char>> = input_str.lines().map(|l| l.chars().collect()).collect();
 
-        let directions = [(-1, 0), (0, 1), (1, 0), (0, -1)];
-        let mut current_direction = 0;
+        let matrix: Vec<Vec<char>> = input_str.lines().map(|l| l.chars().collect()).collect();
+        let height = matrix.len();
+        let width = matrix[0].len();
 
-        let mut guard = guard_position(&matrix);
+        let (mut y, mut x) = get_guard(&matrix).unwrap();
+        let mut dir_idx = 0;
+        let mut visited = HashSet::new();
 
-        while let Some((y, x)) = guard {
-            let (dy, dx) = directions[current_direction];
-            let next_y = (y + dy) as usize;
-            let next_x = (x + dx) as usize;
+        loop {
+            let (dy, dx) = DIRECTIONS[dir_idx];
+            let ny = y.wrapping_add(dy as usize);
+            let nx = x.wrapping_add(dx as usize);
 
-            let next_char = &matrix
-                .get(next_y)
-                .and_then(|l| l.get(next_x))
-                .unwrap_or(&'s');
+            if ny >= height || nx >= width {
+                break;
+            }
+
+            let next_char = matrix[ny][nx];
 
             match next_char {
-                's' => {
-                    matrix[y as usize][x as usize] = 'X';
-                    guard = None;
-                }
                 '#' => {
-                    current_direction = (current_direction + 1) % 4;
+                    dir_idx = (dir_idx + 1) % 4;
                 }
                 _ => {
-                    matrix[next_y][next_x] = '^';
-                    matrix[y as usize][x as usize] = 'X';
-                    guard = Some((next_y as isize, next_x as isize));
+                    let npid = ny * width + nx;
+                    visited.insert(npid);
+
+                    y = ny;
+                    x = nx;
                 }
             }
         }
 
-        let positions: usize = matrix
-            .into_iter()
-            .map(|l| l.into_iter().filter(|c| *c == 'X').count())
-            .sum();
-
-        Ok(positions)
+        Ok(visited.len())
     })
 }
 
-fn guard_position(matrix: &[Vec<char>]) -> Option<(isize, isize)> {
-    let mut positon = None;
-
-    for y in 0..matrix.len() {
-        for x in 0..matrix[0].len() {
-            if matrix[y][x] == '^' {
-                positon = Some((y as isize, x as isize));
-                break;
-            }
+fn get_guard(matrix: &[Vec<char>]) -> Option<(usize, usize)> {
+    for (y, row) in matrix.iter().enumerate() {
+        if let Some(x) = row.iter().position(|&c| c == '^') {
+            return Some((y, x));
         }
     }
-
-    positon
+    None
 }
