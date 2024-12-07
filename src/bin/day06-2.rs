@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use aoc::{pretty_result, read_input_to_string};
 
 fn main() {
@@ -5,52 +7,57 @@ fn main() {
         let input_str = read_input_to_string(6)?;
         let matrix: Vec<Vec<char>> = input_str.lines().map(|l| l.chars().collect()).collect();
 
-        let mut count = 0;
+        let guard = get_guard(&matrix).unwrap();
+        let dirs: [(isize, isize); 4] = [(-1, 0), (0, 1), (1, 0), (0, -1)];
 
-        for l in 0..matrix.len() {
-            for c in 0..matrix[0].len() {
-                if matrix[l][c] == '#' || matrix[l][c] == '^' {
+        let height = matrix.len();
+        let width = matrix[0].len();
+
+        let mut count = 0;
+        let mut visited = HashSet::new();
+
+        for (start_y, row) in matrix.iter().enumerate() {
+            for (start_x, &cell) in row.iter().enumerate() {
+                if cell == '#' || cell == '^' {
                     continue;
                 }
 
-                let directions = [(-1, 0), (0, 1), (1, 0), (0, -1)];
-                let mut current_direction = 0;
-                let mut matrix = matrix.clone();
-                matrix[l][c] = '#';
+                visited.clear();
 
-                let mut guard = guard_position(&matrix);
-                let mut tried = Vec::new();
+                let (mut y, mut x) = guard;
+                let mut dir_idx = 0;
 
-                while let Some((y, x)) = guard {
-                    let (dy, dx) = directions[current_direction];
-                    let next_y = (y + dy) as usize;
-                    let next_x = (x + dx) as usize;
+                loop {
+                    let (dy, dx) = dirs[dir_idx];
+                    let ny = y.wrapping_add(dy as usize);
+                    let nx = x.wrapping_add(dx as usize);
 
-                    let next_char = &matrix
-                        .get(next_y)
-                        .and_then(|l| l.get(next_x))
-                        .unwrap_or(&'s');
+                    if ny >= height || nx >= width {
+                        break;
+                    }
+
+                    let next_char = if ny == start_y && nx == start_x {
+                        '#'
+                    } else {
+                        matrix[ny][nx]
+                    };
 
                     match next_char {
-                        's' => {
-                            matrix[y as usize][x as usize] = 'X';
-                            guard = None;
-                        }
                         '#' => {
-                            let is_cycle = tried.iter().any(|t| *t == ((y, x), (next_y, next_x)));
+                            // let edge_id = y * width + x;
+                            // let next_edge_id = ny * width + nx;
+                            // let edge = ((edge_id as u64) << 32) | next_edge_id as u64;
 
-                            if is_cycle {
+                            if !visited.insert(((y, x), (ny, nx))) {
                                 count += 1;
                                 break;
                             }
 
-                            tried.push(((y, x), (next_y, next_x)));
-                            current_direction = (current_direction + 1) % 4;
+                            dir_idx = (dir_idx + 1) % 4;
                         }
                         _ => {
-                            matrix[next_y][next_x] = '^';
-                            matrix[y as usize][x as usize] = 'X';
-                            guard = Some((next_y as isize, next_x as isize));
+                            y = ny;
+                            x = nx;
                         }
                     }
                 }
@@ -61,17 +68,11 @@ fn main() {
     })
 }
 
-fn guard_position(matrix: &[Vec<char>]) -> Option<(isize, isize)> {
-    let mut positon = None;
-
-    for y in 0..matrix.len() {
-        for x in 0..matrix[0].len() {
-            if matrix[y][x] == '^' {
-                positon = Some((y as isize, x as isize));
-                break;
-            }
+fn get_guard(matrix: &[Vec<char>]) -> Option<(usize, usize)> {
+    for (y, row) in matrix.iter().enumerate() {
+        if let Some(x) = row.iter().position(|&c| c == '^') {
+            return Some((y, x));
         }
     }
-
-    positon
+    None
 }
