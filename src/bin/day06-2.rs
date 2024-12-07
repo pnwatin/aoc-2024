@@ -44,11 +44,11 @@ fn main() {
 
                     match next_char {
                         '#' => {
-                            // let edge_id = y * width + x;
-                            // let next_edge_id = ny * width + nx;
-                            // let edge = ((edge_id as u64) << 32) | next_edge_id as u64;
+                            let pid = y * width + x;
+                            let npid = ny * width + nx;
+                            let id = ((pid as u64) << 32) | npid as u64;
 
-                            if !visited.insert(((y, x), (ny, nx))) {
+                            if !visited.insert(id) {
                                 count += 1;
                                 break;
                             }
