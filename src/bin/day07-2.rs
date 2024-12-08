@@ -31,7 +31,7 @@ fn can_be_true((value, numbers): &(u64, Vec<u64>)) -> bool {
                 0 => acc += num,
                 1 => acc *= num,
                 2 => {
-                    acc = acc * 10u64.pow(num.ilog10() + 1) + num;
+                    acc = acc * 10u64.pow(num.checked_ilog10().unwrap_or(0) + 1) + num;
                 }
                 _ => unreachable!(),
             }
